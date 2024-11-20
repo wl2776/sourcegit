@@ -36,15 +36,17 @@ namespace SourceGit.Views
 
             Task.Run(() =>
             {
-                var message = new Commands.GenerateCommitMessage(_service, _repo, _changes, _cancel.Token, SetDescription).Result();
-                if (_cancel.IsCancellationRequested)
-                    return;
-
-                Dispatcher.UIThread.Invoke(() =>
+                new Commands.GenerateCommitMessage(_service, _repo, _changes, _cancel.Token, progress => 
                 {
-                    _onDone?.Invoke(message);
-                    Close();
-                });
+                    Dispatcher.UIThread.Invoke(() => ProgressMessage.Text = progress);
+                }, 
+                message =>
+                {
+                    Dispatcher.UIThread.Invoke(() => _onDone?.Invoke(message));
+                }).Exec();
+
+                if (!_cancel.IsCancellationRequested)
+                    Dispatcher.UIThread.Invoke(Close);
             }, _cancel.Token);
         }
 
@@ -52,11 +54,6 @@ namespace SourceGit.Views
         {
             base.OnClosing(e);
             _cancel.Cancel();
-        }
-
-        private void SetDescription(string message)
-        {
-            Dispatcher.UIThread.Invoke(() => ProgressMessage.Text = message);
         }
 
         private Models.OpenAIService _service;

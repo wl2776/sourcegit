@@ -20,76 +20,75 @@ namespace SourceGit.Commands
             }
         }
 
-        public GenerateCommitMessage(Models.OpenAIService service, string repo, List<Models.Change> changes, CancellationToken cancelToken, Action<string> onProgress)
+        public GenerateCommitMessage(Models.OpenAIService service, string repo, List<Models.Change> changes, CancellationToken cancelToken, Action<string> onProgress, Action<string> onResponse)
         {
             _service = service;
             _repo = repo;
             _changes = changes;
             _cancelToken = cancelToken;
             _onProgress = onProgress;
+            _onResponse = onResponse;
         }
 
-        public string Result()
+        public void Exec()
         {
             try
             {
-                var summarybuilder = new StringBuilder();
+                var summaryBuilder = new StringBuilder();
                 var bodyBuilder = new StringBuilder();
+                _onResponse?.Invoke("Wait for all file analysis to complete...");
                 foreach (var change in _changes)
                 {
                     if (_cancelToken.IsCancellationRequested)
-                        return "";
+                        return;
 
                     _onProgress?.Invoke($"Analyzing {change.Path}...");
-
-                    var summary = GenerateChangeSummary(change);
-                    summarybuilder.Append("- ");
-                    summarybuilder.Append(summary);
-                    summarybuilder.Append("(file: ");
-                    summarybuilder.Append(change.Path);
-                    summarybuilder.Append(")");
-                    summarybuilder.AppendLine();
+                    _onResponse?.Invoke($"Wait for all file analysis to complete...\n\n{bodyBuilder}");
 
                     bodyBuilder.Append("- ");
-                    bodyBuilder.Append(summary);
-                    bodyBuilder.AppendLine();
+                    summaryBuilder.Append("- ");
+                    GenerateChangeSummary(change, summaryBuilder, bodyBuilder);
+
+                    bodyBuilder.Append("\n");
+                    summaryBuilder.Append("(file: ");
+                    summaryBuilder.Append(change.Path);
+                    summaryBuilder.Append(")\n");
                 }
 
                 if (_cancelToken.IsCancellationRequested)
-                    return "";
+                    return;
 
                 _onProgress?.Invoke($"Generating commit message...");
-
                 var body = bodyBuilder.ToString();
-                var subject = GenerateSubject(summarybuilder.ToString());
-                return string.Format("{0}\n\n{1}", subject, body);
+                GenerateSubject(summaryBuilder.ToString(), body);
             }
             catch (Exception e)
             {
                 App.RaiseException(_repo, $"Failed to generate commit message: {e}");
-                return "";
             }
         }
 
-        private string GenerateChangeSummary(Models.Change change)
+        private void GenerateChangeSummary(Models.Change change, StringBuilder summary, StringBuilder body)
         {
             var rs = new GetDiffContent(_repo, new Models.DiffOption(change, false)).ReadToEnd();
             var diff = rs.IsSuccess ? rs.StdOut : "unknown change";
 
-            var rsp = _service.Chat(_service.AnalyzeDiffPrompt, $"Here is the `git diff` output: {diff}", _cancelToken);
-            if (rsp != null && rsp.Choices.Count > 0)
-                return rsp.Choices[0].Message.Content;
-
-            return string.Empty;
+            _service.Chat(_service.AnalyzeDiffPrompt, $"Here is the `git diff` output: {diff}", _cancelToken, update =>
+            {
+                body.Append(update);
+                summary.Append(update);
+                _onResponse?.Invoke($"Wait for all file analysis to complete...\n\n{body}");
+            });
         }
 
-        private string GenerateSubject(string summary)
+        private void GenerateSubject(string summary, string body)
         {
-            var rsp = _service.Chat(_service.GenerateSubjectPrompt, $"Here are the summaries changes:\n{summary}", _cancelToken);
-            if (rsp != null && rsp.Choices.Count > 0)
-                return rsp.Choices[0].Message.Content;
-
-            return string.Empty;
+            StringBuilder result = new StringBuilder();
+            _service.Chat(_service.GenerateSubjectPrompt, $"Here are the summaries changes:\n{summary}", _cancelToken, update =>
+            {
+                result.Append(update);
+                _onResponse?.Invoke($"{result}\n\n{body}");
+            });
         }
 
         private Models.OpenAIService _service;
@@ -97,5 +96,6 @@ namespace SourceGit.Commands
         private List<Models.Change> _changes;
         private CancellationToken _cancelToken;
         private Action<string> _onProgress;
+        private Action<string> _onResponse;
     }
 }
