@@ -210,10 +210,21 @@ namespace SourceGit
                         ]
                     }
                 };
-                icons[0].Clicked += (_, _) => ShowWindow();
+                icons[0].Clicked += (_, _) => ToggleWindow();
                 TrayIcon.SetIcons(Current, icons);
             }
         }
+
+        private static void ToggleWindow() {
+            if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                if (desktop.MainWindow.IsVisible) {
+                    desktop.MainWindow.Hide();
+                } else {
+                    ShowWindow();
+                }
+            }
+        }
+
         private static void ShowWindow()
         {
             if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
