@@ -21,6 +21,8 @@ namespace SourceGit.Native
             void OpenInFileManager(string path, bool select);
             void OpenBrowser(string url);
             void OpenWithDefaultEditor(string file);
+
+            bool EnsureSingleInstance();
         }
 
         public static string DataDir { get; private set; } = string.Empty;
@@ -121,6 +123,11 @@ namespace SourceGit.Native
         public static void OpenWithDefaultEditor(string file)
         {
             _backend.OpenWithDefaultEditor(file);
+        }
+
+        public static bool EnsureSingleInstance()
+        {
+            return _backend.EnsureSingleInstance();
         }
 
         private static IBackend _backend = null;

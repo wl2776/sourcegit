@@ -85,5 +85,7 @@ namespace SourceGit.Native
         {
             Process.Start("open", $"\"{file}\"");
         }
+
+        public bool EnsureSingleInstance() { return true; }
     }
 }
