@@ -256,11 +256,12 @@ namespace SourceGit.Views
         protected override void OnClosing(WindowClosingEventArgs e)
         {
             var pref = ViewModels.Preference.Instance;
-            if (pref.SystemTrayIcon) {
+            var launcher = DataContext as ViewModels.Launcher;
+            if (pref.SystemTrayIcon && launcher is { InterceptQuit: true }) {
                 e.Cancel = true;
                 Hide();
             } else {
-                (DataContext as ViewModels.Launcher)?.Quit(Width, Height);
+                launcher?.Quit(Width, Height);
             }
             base.OnClosing(e);
         }

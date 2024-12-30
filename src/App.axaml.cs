@@ -169,9 +169,9 @@ namespace SourceGit
             }
         }
 
-        public static void SetupTrayIcon(bool enable)
+        public void SetupTrayIcon(bool enable)
         {
-            if (enable)
+            if (enable && Native.OS.EnsureSingleInstance())
             {
                 var icons = new TrayIcons {
                     new TrayIcon {
@@ -186,6 +186,7 @@ namespace SourceGit
                 };
                 icons[0].Clicked += (_, _) => ToggleWindow();
                 TrayIcon.SetIcons(Current, icons);
+                _createdSystemTrayIcon = true;
             }
         }
 
@@ -519,11 +520,11 @@ namespace SourceGit
                 startupRepo = desktop.Args[0];
 
             var pref = ViewModels.Preference.Instance;
-            if (pref.SystemTrayIcon) {
+            if (_createdSystemTrayIcon) {
                 desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             }
 
-            _launcher = new ViewModels.Launcher(startupRepo);
+            _launcher = new ViewModels.Launcher(startupRepo, _createdSystemTrayIcon);
             desktop.MainWindow = new Views.Launcher() { DataContext = _launcher };
 
 #if !DISABLE_UPDATE_DETECTION
@@ -589,5 +590,6 @@ namespace SourceGit
         private ResourceDictionary _activeLocale = null;
         private ResourceDictionary _themeOverrides = null;
         private ResourceDictionary _fontsOverrides = null;
+        private bool _createdSystemTrayIcon = false;
     }
 }
