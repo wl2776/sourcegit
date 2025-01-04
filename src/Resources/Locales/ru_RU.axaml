@@ -463,6 +463,7 @@
   <x:String x:Key="Text.Preference.Appearance.ThemeOverrides" xml:space="preserve">Переопределение темы</x:String>
   <x:String x:Key="Text.Preference.Appearance.UseFixedTabWidth" xml:space="preserve">Использовать фиксированную ширину табуляции в строке заголовка.</x:String>
   <x:String x:Key="Text.Preference.Appearance.UseNativeWindowFrame" xml:space="preserve">Использовать системное окно</x:String>
+  <x:String x:Key="Text.Preference.Appearance.SystemTrayIcon" xml:space="preserve">Иконка в системном лотке (нужен перезапуск)</x:String>
   <x:String x:Key="Text.Preference.DiffMerge" xml:space="preserve">ИНСТРУМЕНТ РАЗЛИЧИЙ/СЛИЯНИЯ</x:String>
   <x:String x:Key="Text.Preference.DiffMerge.Path" xml:space="preserve">Путь установки</x:String>
   <x:String x:Key="Text.Preference.DiffMerge.Path.Placeholder" xml:space="preserve">Введите путь для инструмента различия/слияния</x:String>
