@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              xmlns:m="using:SourceGit.Models"
              xmlns:vm="using:SourceGit.ViewModels"
              xmlns:v="using:SourceGit.Views"
@@ -218,14 +219,24 @@
                         </MultiBinding>
                       </Border.IsVisible>
 
-                      <Grid Margin="8,0,0,0" RowDefinitions="32,32" ColumnDefinitions="Auto,*">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="info_label" Text="THEIRS"/>
-                        <ContentControl Grid.Row="0" Grid.Column="1" Margin="16,0,0,0" Content="{Binding Theirs}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Classes="info_label" Text="MINE"/>
-                        <ContentControl Grid.Row="1" Grid.Column="1" Margin="16,0,0,0" Content="{Binding Mine}"/>
+                      <Grid Margin="8,0,0,0" RowDefinitions="32,32,*" ColumnDefinitions="*,*,*">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Classes="info_label" HorizontalAlignment="Left" Text="THEIRS"/>
+                        <ContentControl Grid.Row="1" Grid.Column="0" Margin="16,0,0,0" HorizontalAlignment="Left" Content="{Binding Theirs}"/>
+                        <TextBlock Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Classes="info_label" HorizontalAlignment="Center" Text="{DynamicResource Text.WorkingCopy}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Classes="info_label" HorizontalAlignment="Right" Text="MINE"/>
+                        <ContentControl Grid.Row="1" Grid.Column="2" Margin="16,0,0,0" HorizontalAlignment="Right" Content="{Binding Mine}"/>
+                        <avaloniaEdit:TextEditor Grid.Row="2" Grid.Column="0"  Text="theirs" Name="EditorTheirs"
+                                                 ShowLineNumbers="True"
+                                                 FontFamily="Cascadia Code,Consolas,Menlo,Monospace"/>
+                        <avaloniaEdit:TextEditor Grid.Row="2" Grid.Column="1"  Text="conflicted" Name="EditorConfl"
+                                                 ShowLineNumbers="True"
+                                                 FontFamily="Cascadia Code,Consolas,Menlo,Monospace"/> 
+                        <avaloniaEdit:TextEditor Grid.Row="2" Grid.Column="2"  Text="ours"  Name="EditorOurs"
+                                                 ShowLineNumbers="True"
+                                                 FontFamily="Cascadia Code,Consolas,Menlo,Monospace"/> 
                       </Grid>
                     </Border>
-
+                    
                     <StackPanel Margin="0,8,0,0"  Orientation="Horizontal" HorizontalAlignment="Center">
                       <Button Classes="flat" Content="USE THEIRS" Command="{Binding UseTheirs}"/>
                       <Button Classes="flat" Margin="8,0,0,0" Content="USE MINE" Command="{Binding UseMine}"/>
